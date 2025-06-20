@@ -91,13 +91,69 @@ class _LoginState extends State<Login> {
                     hinttext: "ُEnter Your Password",
                     mycontroller: password,
                   ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 10, bottom: 20),
-                    alignment: Alignment.topRight,
-                    child: const Text(
-                      "Forgot Password ?",
-                      style: TextStyle(fontSize: 14),
+                  InkWell(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 10, bottom: 20),
+                      alignment: Alignment.topRight,
+                      child: const Text(
+                        "Forgot Password ?",
+                        style: TextStyle(fontSize: 14),
+                      ),
                     ),
+                    onTap: () async {
+                      if (email.text.isEmpty) {
+                        AwesomeDialog(
+                          context: context,
+                          dialogType: DialogType.error,
+                          animType: AnimType.rightSlide,
+                          title: 'خطأ',
+                          desc: 'من فضلك أدخل البريد الإلكتروني',
+                          btnOkOnPress: () {},
+                        ).show();
+                        return;
+                      }
+
+                      try {
+                        final methods = await FirebaseAuth.instance
+                            .fetchSignInMethodsForEmail(email.text.trim());
+
+                        if (methods.isEmpty) {
+                          AwesomeDialog(
+                            context: context,
+                            dialogType: DialogType.error,
+                            animType: AnimType.rightSlide,
+                            title: 'البريد غير مسجل',
+                            desc:
+                                'البريد الإلكتروني غير مسجل لدينا. تأكد من صحته أو أنشئ حسابًا جديدًا.',
+                            btnOkOnPress: () {},
+                          ).show();
+                        } else {
+                          await FirebaseAuth.instance.sendPasswordResetEmail(
+                            email: email.text.trim(),
+                          );
+
+                          AwesomeDialog(
+                            context: context,
+                            dialogType: DialogType.info,
+                            animType: AnimType.rightSlide,
+                            title: 'تم الإرسال',
+                            desc:
+                                'إذا كان البريد الإلكتروني مسجلًا، ستتلقى رابط إعادة تعيين كلمة المرور.',
+                            btnOkOnPress: () {},
+                          ).show();
+                        }
+                      } catch (e) {
+                        AwesomeDialog(
+                          context: context,
+                          dialogType: DialogType.error,
+                          animType: AnimType.rightSlide,
+                          title: 'حدث خطأ',
+                          desc:
+                              'حدث خطأ أثناء إرسال البريد. حاول مرة أخرى لاحقًا.',
+                          btnOkOnPress: () {},
+                        ).show();
+                      }
+                    },
                   ),
                 ],
               ),
