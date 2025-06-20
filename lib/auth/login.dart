@@ -1,9 +1,9 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_course/components/custombuttonauth.dart';
-import 'package:firebase_course/components/customlogoauth.dart';
 import 'package:firebase_course/components/textformfield.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -16,6 +16,31 @@ class _LoginState extends State<Login> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
   GlobalKey<FormState> formState = GlobalKey<FormState>();
+
+  Future signInWithGoogle() async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    /*the following line will return null if the user cancels the sign-in to prevent not cause error if the user dont choose any email to sign in 
+     the function will stope on return and wont display the remainig code*/
+    if (googleUser == null) {
+      // The user canceled the sign-in
+      return;
+    }
+
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    // Once signed in, return the UserCredential
+    await FirebaseAuth.instance.signInWithCredential(credential);
+    Navigator.of(context).pushNamedAndRemoveUntil("home", (route) => false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,9 +112,23 @@ class _LoginState extends State<Login> {
                           email: email.text.trim(),
                           password: password.text.trim(),
                         );
-                    Navigator.of(
-                      context,
-                    ).pushNamedAndRemoveUntil("home", (route) => false);
+                    if (credential.user!.emailVerified) {
+                      Navigator.of(
+                        context,
+                      ).pushNamedAndRemoveUntil("home", (route) => false);
+                    } else {
+                      FirebaseAuth.instance.currentUser!
+                          .sendEmailVerification();
+                      AwesomeDialog(
+                        context: context,
+                        dialogType: DialogType.error,
+                        animType: AnimType.rightSlide,
+                        title: 'Error',
+                        desc: 'Please verify your email before logging in',
+                        btnCancelOnPress: () {},
+                        btnOkOnPress: () {},
+                      ).show();
+                    }
                   } on FirebaseAuthException catch (e) {
                     if (e.code == 'user-not-found') {
                       AwesomeDialog(
@@ -135,7 +174,9 @@ class _LoginState extends State<Login> {
               ),
               color: Colors.red[700],
               textColor: Colors.white,
-              onPressed: () {},
+              onPressed: () {
+                signInWithGoogle();
+              },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
