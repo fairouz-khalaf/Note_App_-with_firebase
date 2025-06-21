@@ -168,23 +168,23 @@ class _LoginState extends State<Login> {
                           email: email.text.trim(),
                           password: password.text.trim(),
                         );
-                    if (credential.user!.emailVerified) {
-                      Navigator.of(
-                        context,
-                      ).pushNamedAndRemoveUntil("home", (route) => false);
-                    } else {
-                      FirebaseAuth.instance.currentUser!
-                          .sendEmailVerification();
-                      AwesomeDialog(
-                        context: context,
-                        dialogType: DialogType.error,
-                        animType: AnimType.rightSlide,
-                        title: 'Error',
-                        desc: 'Please verify your email before logging in',
-                        btnCancelOnPress: () {},
-                        btnOkOnPress: () {},
-                      ).show();
-                    }
+                    // if (credential.user!.emailVerified) {
+                    //   Navigator.of(
+                    //     context,
+                    //   ).pushNamedAndRemoveUntil("home", (route) => false);
+                    // } else {
+                    //   // FirebaseAuth.instance.currentUser!
+                    //   //     .sendEmailVerification();
+                    //   AwesomeDialog(
+                    //     context: context,
+                    //     dialogType: DialogType.error,
+                    //     animType: AnimType.rightSlide,
+                    //     title: 'Error',
+                    //     desc: 'Please verify your email before logging in',
+                    //     btnCancelOnPress: () {},
+                    //     btnOkOnPress: () {},
+                    //   ).show();
+                    // }
                   } on FirebaseAuthException catch (e) {
                     if (e.code == 'user-not-found') {
                       AwesomeDialog(
