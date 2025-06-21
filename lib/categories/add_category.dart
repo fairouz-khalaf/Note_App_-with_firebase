@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_course/components/textformfield.dart';
 import 'package:flutter/material.dart';
 
@@ -22,8 +23,8 @@ class _AddCategoryState extends State<AddCategory> {
     return categories
         .add({
           'categoryName': categoryNameController.text, // John Doe
-          'categoryDescription':
-              categoryDescriptionController.text, // Stokes and Sons
+          'categoryDescription': categoryDescriptionController.text,
+          "id": FirebaseAuth.instance.currentUser!.uid, // 42
         })
         .then((value) => print("Category Added"))
         .catchError((error) => print("Failed to add category: $error"));
