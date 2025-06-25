@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_course/categories/edit.dart';
 import 'package:firebase_course/note/add.dart';
+import 'package:firebase_course/note/edit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class ViewNote extends StatefulWidget {
@@ -15,26 +15,7 @@ class ViewNote extends StatefulWidget {
   State<ViewNote> createState() => _ViewNoteState();
 }
 
-List<QueryDocumentSnapshot> data = [];
-
 class _ViewNoteState extends State<ViewNote> {
-  getData() async {
-    QuerySnapshot snapshot =
-        await FirebaseFirestore.instance
-            .collection("categories")
-            .doc(widget.noteId)
-            .collection("note")
-            .get();
-    data.addAll(snapshot.docs);
-    setState(() {});
-  }
-
-  @override
-  initState() {
-    getData();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,6 +32,12 @@ class _ViewNoteState extends State<ViewNote> {
       ),
       appBar: AppBar(
         title: const Text('Notes'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pushReplacementNamed("home");
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -73,14 +60,13 @@ class _ViewNoteState extends State<ViewNote> {
                 .doc(widget.noteId)
                 .collection("note")
                 .get(),
-
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("No categories found"));
+            return const Center(child: Text("No notes found"));
           }
 
           final data = snapshot.data!.docs;
@@ -95,37 +81,49 @@ class _ViewNoteState extends State<ViewNote> {
             ),
             itemCount: data.length,
             itemBuilder: (context, index) {
-              final category = data[index];
+              final note = data[index];
               return InkWell(
+                onTap:
+                    () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder:
+                            (context) => EditNote(
+                              noteId: note.id,
+                              categoryId: widget.noteId,
+                              initialNoteText: note['note'],
+                            ),
+                      ),
+                    ),
                 onLongPress: () {
                   AwesomeDialog(
                     context: context,
                     dialogType: DialogType.info,
                     animType: AnimType.rightSlide,
-
                     desc: 'اختر ماذا تريد',
+                    btnOkText: "تعديل القسم",
                     btnOkOnPress: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder:
                               (context) => EditCategory(
-                                categoryId: category['categoryName'].id,
-                                categoryName: category['categoryName'],
+                                categoryId: note['categoryName'].id,
+                                categoryName: note['categoryName'],
                               ),
                         ),
                       );
                     },
                     btnCancelText: "حذف",
                     btnCancelOnPress: () async {
-                      // await FirebaseFirestore.instance
-                      //     .collection("categories")
-                      //     .doc(category.id)
-                      //     .delete();
-                      // ScaffoldMessenger.of(context).showSnackBar(
-                      //   const SnackBar(
-                      //     content: Text("Category deleted successfully!"),
-                      //   ),
-                      // );
+                      await FirebaseFirestore.instance
+                          .collection("categories")
+                          .doc(widget.noteId)
+                          .collection("note")
+                          .doc(note.id)
+                          .delete();
+                      setState(() {}); // Refresh after delete
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Note deleted")),
+                      );
                     },
                   ).show();
                 },
@@ -134,17 +132,21 @@ class _ViewNoteState extends State<ViewNote> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        category['note'],
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          note['note'],
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );

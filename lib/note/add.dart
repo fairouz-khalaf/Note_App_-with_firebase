@@ -67,7 +67,7 @@ class _AddNoteState extends State<AddNote> {
                     );
                   }
                 },
-                child: Text("Add Category"),
+                child: Text("Add Note"),
               ),
             ],
           ),
