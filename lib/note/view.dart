@@ -99,31 +99,16 @@ class _ViewNoteState extends State<ViewNote> {
                     context: context,
                     dialogType: DialogType.info,
                     animType: AnimType.rightSlide,
-                    desc: 'اختر ماذا تريد',
-                    btnOkText: "تعديل القسم",
+                    desc: 'هل تريد الحذف',
+                    btnOkText: "نعم",
                     btnOkOnPress: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder:
-                              (context) => EditCategory(
-                                categoryId: note['categoryName'].id,
-                                categoryName: note['categoryName'],
-                              ),
-                        ),
-                      );
-                    },
-                    btnCancelText: "حذف",
-                    btnCancelOnPress: () async {
-                      await FirebaseFirestore.instance
-                          .collection("categories")
+                      FirebaseFirestore.instance
+                          .collection('categories')
                           .doc(widget.noteId)
                           .collection("note")
                           .doc(note.id)
                           .delete();
-                      setState(() {}); // Refresh after delete
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Note deleted")),
-                      );
+                      setState(() {});
                     },
                   ).show();
                 },
