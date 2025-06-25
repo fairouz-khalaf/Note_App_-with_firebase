@@ -2,19 +2,38 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_course/categories/edit.dart';
-import 'package:firebase_course/note/view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-class Homepage extends StatefulWidget {
-  const Homepage({super.key});
+class ViewNote extends StatefulWidget {
+  final String noteId;
+  const ViewNote({super.key, required this.noteId});
 
   @override
-  State<Homepage> createState() => _HomepageState();
+  State<ViewNote> createState() => _ViewNoteState();
 }
 
-class _HomepageState extends State<Homepage> {
+List<QueryDocumentSnapshot> data = [];
+
+class _ViewNoteState extends State<ViewNote> {
+  getData() async {
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance
+            .collection("categories")
+            .doc(widget.noteId)
+            .collection("note")
+            .get();
+    data.addAll(snapshot.docs);
+    setState(() {});
+  }
+
+  @override
+  initState() {
+    getData();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,7 +45,7 @@ class _HomepageState extends State<Homepage> {
         child: const Icon(Icons.add, color: Colors.white, size: 30),
       ),
       appBar: AppBar(
-        title: const Text('Categories'),
+        title: const Text('Notes'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -42,12 +61,14 @@ class _HomepageState extends State<Homepage> {
           ),
         ],
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream:
+      body: FutureBuilder<QuerySnapshot>(
+        future:
             FirebaseFirestore.instance
                 .collection("categories")
-                .where("id", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-                .snapshots(),
+                .doc(widget.noteId)
+                .collection("note")
+                .get(),
+
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -71,15 +92,6 @@ class _HomepageState extends State<Homepage> {
             itemBuilder: (context, index) {
               final category = data[index];
               return InkWell(
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return ViewNote(noteId: data[index].id);
-                      },
-                    ),
-                  );
-                },
                 onLongPress: () {
                   AwesomeDialog(
                     context: context,
@@ -92,7 +104,7 @@ class _HomepageState extends State<Homepage> {
                         MaterialPageRoute(
                           builder:
                               (context) => EditCategory(
-                                categoryId: category.id,
+                                categoryId: category['categoryName'].id,
                                 categoryName: category['categoryName'],
                               ),
                         ),
@@ -100,15 +112,15 @@ class _HomepageState extends State<Homepage> {
                     },
                     btnCancelText: "حذف",
                     btnCancelOnPress: () async {
-                      await FirebaseFirestore.instance
-                          .collection("categories")
-                          .doc(category.id)
-                          .delete();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Category deleted successfully!"),
-                        ),
-                      );
+                      // await FirebaseFirestore.instance
+                      //     .collection("categories")
+                      //     .doc(category.id)
+                      //     .delete();
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //   const SnackBar(
+                      //     content: Text("Category deleted successfully!"),
+                      //   ),
+                      // );
                     },
                   ).show();
                 },
@@ -120,10 +132,8 @@ class _HomepageState extends State<Homepage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SvgPicture.asset("assets/images/folder.svg", height: 80),
-                      const SizedBox(height: 10),
                       Text(
-                        category['categoryName'],
+                        category['note'],
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

@@ -3,37 +3,41 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_course/components/textformfield.dart';
 import 'package:flutter/material.dart';
 
-class AddCategory extends StatefulWidget {
-  const AddCategory({super.key});
+class EditCategory extends StatefulWidget {
+  final String categoryId;
+  final String categoryName;
+  const EditCategory({
+    super.key,
+    required this.categoryId,
+    required this.categoryName,
+  });
 
   @override
-  State<AddCategory> createState() => _AddCategoryState();
+  State<EditCategory> createState() => _EditCategoryState();
 }
 
-class _AddCategoryState extends State<AddCategory> {
+class _EditCategoryState extends State<EditCategory> {
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   TextEditingController categoryNameController = TextEditingController();
-  TextEditingController categoryDescriptionController = TextEditingController();
   CollectionReference categories = FirebaseFirestore.instance.collection(
     'categories',
   );
 
-  Future<void> addUser() {
-    // Call the user's CollectionReference to add a new user
+  Future<void> editCategory() {
     return categories
-        .add({
-          'categoryName': categoryNameController.text, // John Doe
-          'categoryDescription': categoryDescriptionController.text,
-          "id": FirebaseAuth.instance.currentUser!.uid, // 42
+        .doc(widget.categoryId)
+        .update({
+          'categoryName': categoryNameController.text,
+          "id": FirebaseAuth.instance.currentUser!.uid,
         })
-        .then((value) => print("Category Added"))
-        .catchError((error) => print("Failed to add category: $error"));
+        .then((value) => print("Category Updated"))
+        .catchError((error) => print("Failed to update category: $error"));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Add Category")),
+      appBar: AppBar(title: Text("Edit Category")),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Form(
@@ -52,42 +56,25 @@ class _AddCategoryState extends State<AddCategory> {
                 },
               ),
               SizedBox(height: 20),
-              CustomTextForm(
-                hinttext: "Category Description",
-                mycontroller: categoryDescriptionController,
 
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter a category description";
-                  }
-                  return null;
-                },
-              ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   if (formKey.currentState!.validate()) {
                     // Handle the submission logic here
-                    addUser();
+                    editCategory();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Category added successfully!")),
+                      SnackBar(content: Text("Category updated successfully!")),
                     );
                     Navigator.pop(context);
                   }
                 },
-                child: Text("Add Category"),
+                child: Text("Edit Category"),
               ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  @override
-  dispose() {
-    categoryNameController.dispose();
-    categoryDescriptionController.dispose();
-    super.dispose();
   }
 }
