@@ -2,6 +2,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_course/categories/edit.dart';
+import 'package:firebase_course/note/add.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -40,7 +41,11 @@ class _ViewNoteState extends State<ViewNote> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.orange,
         onPressed: () {
-          Navigator.of(context).pushNamed("addCategory");
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => AddNote(docId: widget.noteId),
+            ),
+          );
         },
         child: const Icon(Icons.add, color: Colors.white, size: 30),
       ),

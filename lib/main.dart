@@ -51,7 +51,7 @@ class _MyAppState extends State<MyApp> {
       routes: {
         "signup": (context) => SignUp(),
         "login": (context) => Login(),
-        "home": (context) => Homepage(),
+        "homePage": (context) => Homepage(),
         "addCategory": (context) => AddCategory(),
       },
     );
