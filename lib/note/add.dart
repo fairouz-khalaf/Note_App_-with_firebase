@@ -1,10 +1,15 @@
+import 'dart:io';
+import 'package:path/path.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_course/components/textformfield.dart';
 import 'package:firebase_course/note/view.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AddNote extends StatefulWidget {
   final String docId;
+
   const AddNote({super.key, required this.docId});
 
   @override
@@ -14,6 +19,8 @@ class AddNote extends StatefulWidget {
 class _AddNoteState extends State<AddNote> {
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   TextEditingController noteNameController = TextEditingController();
+  File? imageFile;
+  String? url;
 
   Future<void> addNote() {
     final noteCollection = FirebaseFirestore.instance
@@ -27,6 +34,36 @@ class _AddNoteState extends State<AddNote> {
           because the note is already associated with the category*/
       // "id": FirebaseAuth.instance.currentUser!.uid,
     });
+  }
+
+  getImage() async {
+    final ImagePicker picker = ImagePicker();
+
+    // اختيار صورة من المعرض
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    // التأكد إن فيه صورة فعلاً
+    if (image == null) return;
+
+    // تحويل XFile إلى File
+    imageFile = File(image.path);
+
+    // استخراج اسم الملف من المسار
+    var imageName = basename(image.path);
+
+    // 🔥 إنشاء مرجع داخل Firebase Storage بمسار (مثلاً uploads/photo.jpg)
+    var refStorage = FirebaseStorage.instance.ref("uploads/$imageName");
+    // او
+    // var refStorage = FirebaseStorage.instance.ref("uploads").child(imageName);
+
+    // 🔼 رفع الملف إلى Firebase Storage
+    await refStorage.putFile(imageFile!);
+
+    // 🌐 الحصول على رابط التحميل النهائي للصورة بعد رفعها
+    url = await refStorage.getDownloadURL();
+
+    // تحديث الواجهة لعرض الصورة
+    setState(() {});
   }
 
   @override
@@ -50,6 +87,38 @@ class _AddNoteState extends State<AddNote> {
                   return null;
                 },
               ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                ),
+                onPressed: () async {
+                  await getImage();
+                  if (imageFile != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Image selected successfully!")),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("No image selected")),
+                    );
+                  }
+                },
+                child: Text("Add Image"),
+              ),
+              SizedBox(height: 20),
+              if (imageFile != null)
+                Center(
+                  // عرض الصورة اللي تم رفعها عن طريق رابطها من Firebase Storage
+                  child: Image.network(
+                    url!,
+                    height: 100,
+                    width: 100,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+
               SizedBox(height: 20),
 
               ElevatedButton(

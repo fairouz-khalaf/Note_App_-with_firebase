@@ -32,6 +32,8 @@ class _ImageViewState extends State<ImageView> {
 
     // 🔥 إنشاء مرجع داخل Firebase Storage بمسار (مثلاً uploads/photo.jpg)
     var refStorage = FirebaseStorage.instance.ref("uploads/$imageName");
+    // او
+    // var refStorage = FirebaseStorage.instance.ref("uploads").child(imageName);
 
     // 🔼 رفع الملف إلى Firebase Storage
     await refStorage.putFile(imageFile!);

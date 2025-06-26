@@ -130,6 +130,7 @@ class _ViewNoteState extends State<ViewNote> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        const SizedBox(height: 10),
                       ],
                     ),
                   ),
