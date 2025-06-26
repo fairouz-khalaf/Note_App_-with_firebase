@@ -4,6 +4,7 @@ import 'package:firebase_course/auth/login.dart';
 import 'package:firebase_course/auth/sign_up.dart';
 import 'package:firebase_course/categories/add_category.dart';
 import 'package:firebase_course/home_page.dart';
+import 'package:firebase_course/note/image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -53,6 +54,7 @@ class _MyAppState extends State<MyApp> {
         "login": (context) => Login(),
         "homePage": (context) => Homepage(),
         "addCategory": (context) => AddCategory(),
+        "imageView": (context) => ImageView(),
       },
     );
   }
