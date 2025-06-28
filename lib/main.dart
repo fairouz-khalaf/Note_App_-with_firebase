@@ -5,12 +5,19 @@ import 'package:firebase_course/auth/sign_up.dart';
 import 'package:firebase_course/categories/add_category.dart';
 import 'package:firebase_course/home_page.dart';
 import 'package:firebase_course/note/image.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling a background message: ${message.messageId}");
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   runApp(MyApp());
 }
 
