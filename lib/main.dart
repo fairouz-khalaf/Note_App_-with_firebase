@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_course/auth/login.dart';
 import 'package:firebase_course/auth/sign_up.dart';
 import 'package:firebase_course/categories/add_category.dart';
+import 'package:firebase_course/chat.dart';
 import 'package:firebase_course/home_page.dart';
 import 'package:firebase_course/note/image.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -29,6 +30,21 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      if (message.data['type'] == "chat") {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (context) => Chat(), // Replace with your chat screen widget
+          ),
+        );
+      }
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
