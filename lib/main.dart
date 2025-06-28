@@ -30,18 +30,29 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  getInit() async {
+    // This function is used to initialize Firebase Messaging and handle any initial messages
+    await FirebaseMessaging.instance.getInitialMessage().then((
+      RemoteMessage? message,
+    ) {
+      if (message != null && message.data['type'] == "chat") {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => Chat()));
+      }
+    });
+  }
+
   @override
   void initState() {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       if (message.data['type'] == "chat") {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder:
-                (context) => Chat(), // Replace with your chat screen widget
-          ),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => Chat()));
       }
     });
+    getInit();
     super.initState();
   }
 
